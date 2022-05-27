@@ -1,10 +1,15 @@
 import React from 'react';
 
-export function DisplayItem(props:{position:string, name:string, imgSrc:string}) {
-	const [isChecked, toggle] = React.useState(false);
+export function DisplayItem(props:{
+	position:string,
+	name:string,
+	imgSrc:string,
+	obtained:boolean,
+	toggleHas:Function
+}) {
 	return(
-	 <label className={`${isChecked && 'isChecked'} gear-tile`}>
-		<input type="checkbox" onChange={()=>toggle(!isChecked)} />
+	 <label className={`${props.obtained && 'isChecked'} gear-tile`}>
+		<input type="checkbox" onChange={(e) => props.toggleHas(e)} />
 		<img
 		 src={`https://etro.gg/s/icons${props.imgSrc}`}
 		 className="gear-icon"

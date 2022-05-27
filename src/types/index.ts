@@ -3,10 +3,12 @@ type AppState = {
   src: string,
   sample: string,
   sets: setType[],
+  obtained: obtainedSetType,
   equipment: equipDict
 };
 
 type setType = {
+  id:string,
   name:string,
   jobAbbrev:string,
   jobIconPath:string,
@@ -23,6 +25,13 @@ type setType = {
   fingerL:string,
   fingerR:string
 };
+
+type obtainedSetType = {
+  [setId:string]: obtainedItemType
+}
+type obtainedItemType = {
+  [slotId:string]: boolean
+}
 
 type equipDict = {
   [index: string]: equipType
@@ -49,5 +58,7 @@ export type {
 	equipDict,
 	setType,
 	AppProps,
-	AppState
+	AppState,
+  obtainedSetType,
+  obtainedItemType
 }
