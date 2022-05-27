@@ -3,7 +3,6 @@ import { DisplaySet, DisplayItem } from './Components';
 import {
 	AppProps,
 	AppState,
-  setType,
   equipDict
  } from './types';
 import { hasKey } from './Utilities';
@@ -22,7 +21,6 @@ class App extends React.Component<AppProps, AppState>{
     };
     this.setSrc = this.setSrc.bind(this);
     this.getSet = this.getSet.bind(this);
-    this.saveSet = this.saveSet.bind(this);
   }
 
   setSrc(e:ChangeEvent<HTMLInputElement>) {
@@ -39,11 +37,7 @@ class App extends React.Component<AppProps, AppState>{
     } else {
       id = this.state.src;
     }
-    let res = await fetchGearset(id);
-    this.saveSet(res);
-  }
-
-  saveSet(set:setType) {
+    let set = await fetchGearset(id);
     const nSets = [...this.state.sets];
     nSets.push(set);
     let nEquip: equipDict = this.state.equipment;
@@ -53,12 +47,10 @@ class App extends React.Component<AppProps, AppState>{
         this.getEquip(set[slot.id], nEquip);
       }
     });
-    console.log('nequip',nEquip)
     this.setState({
       sets: nSets,
       equipment: nEquip
-    });
-    console.log('state',this.state.equipment);
+    }, () => {setTimeout(() => {this.forceUpdate()}, 1000);});
   }
 
   async getEquip(id:string, container:equipDict) {
@@ -66,7 +58,7 @@ class App extends React.Component<AppProps, AppState>{
   }
 
   render(){
-    console.log('render state',this.state.equipment)
+    const equip = this.state.equipment;
     return(
     <>
       <nav>
@@ -93,12 +85,12 @@ class App extends React.Component<AppProps, AppState>{
           setInfo={set}
           open={this.state.sets.length === 1 ? true : false}>
           {slots.map(slot => hasKey(set, slot.id)  && set[slot.id]
-          && this.state.equipment[set[slot.id]] &&
+          && equip[set[slot.id]] &&
           <DisplayItem
             key={slot.pretty+id}
             position={slot.pretty}
-            name={this.state.equipment[set[slot.id]].name}
-            imgSrc={this.state.equipment[set[slot.id]].iconPath}
+            name={equip[set[slot.id]].name}
+            imgSrc={equip[set[slot.id]].iconPath}
             />
           )}
         </DisplaySet>
