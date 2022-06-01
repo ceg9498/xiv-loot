@@ -23,30 +23,30 @@ type setType = {
   neck:string,
   wrists:string,
   fingerL:string,
-  fingerR:string
+  fingerR:string,
 };
 
 type obtainedSetType = {
-  [setId:string]: obtainedItemType
+  [setId:string]: obtainedItemType,
 }
 type obtainedItemType = {
-  [slotId:string]: boolean
+  [slotId:string]: boolean,
 }
 
 type equipDict = {
-  [index: string]: equipType
+  [index: string]: equipType,
 }
 
 type equipType = {
   id:string,
   name:string,
   iconPath:string,
-  position:string
+  position:string,
 }
 
 type slotType = {
   id: string,
-  pretty: string
+  pretty: string,
 }
 
 type Dictionary = { [index:string]: string };
@@ -60,5 +60,5 @@ export type {
 	AppProps,
 	AppState,
   obtainedSetType,
-  obtainedItemType
+  obtainedItemType,
 }
