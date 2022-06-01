@@ -3,7 +3,6 @@ import { DisplaySet, DisplayItem } from './Components';
 import {
 	AppProps,
 	AppState,
-  equipDict
  } from './types';
 import { hasKey } from './Utilities';
 import { sampleIDs, slots } from './data/defaults';
@@ -17,7 +16,7 @@ class App extends React.Component<AppProps, AppState>{
     src: '',
     sample: 'PLD',
     sets: [],
-    equipment: {},
+    equipment: new Map(),
     obtained: {}
     };
     this.setSrc = this.setSrc.bind(this);
@@ -44,23 +43,25 @@ class App extends React.Component<AppProps, AppState>{
     nSets.push(set);
     let obtained = this.state.obtained;
     obtained[set.id] = {};
-    let nEquip: equipDict = this.state.equipment;
     slots.forEach(slot => {
       if(hasKey(set, slot.id) && set[slot.id] &&
-      !this.state.equipment[set[slot.id]]) {
-        this.getEquip(set[slot.id], nEquip);
+      !this.state.equipment.has(set[slot.id])) {
+        this.getEquip(set[slot.id]);
         obtained[set.id][slot.id] = false;
       }
     });
     this.setState({
       sets: nSets,
-      equipment: nEquip,
       obtained: obtained
     }, () => {setTimeout(() => {this.forceUpdate()}, 1000);});
   }
 
-  async getEquip(id:string, container:equipDict) {
-    container[id] = await fetchEquipment(id);
+  async getEquip(id:string) {
+    let res = await fetchEquipment(id);
+    this.setState((prevState) => {
+      const nextEntry = { name: res.name, iconPath: res.iconPath, id: res.id, position: "" };
+      return { equipment: prevState.equipment.set(id, nextEntry) }
+    })
   }
 
   toggleHas(e:ChangeEvent<HTMLInputElement>, setId:string, itemId:string) {
@@ -72,7 +73,6 @@ class App extends React.Component<AppProps, AppState>{
   }
 
   render(){
-    console.log(this.state.obtained);
     const equip = this.state.equipment;
     return(
     <>
@@ -100,12 +100,11 @@ class App extends React.Component<AppProps, AppState>{
           setInfo={set}
           open={this.state.sets.length === 1 ? true : false}>
           {slots.map(slot => hasKey(set, slot.id)  && set[slot.id]
-          && equip[set[slot.id]] &&
+          && equip.has(set[slot.id]) &&
           <DisplayItem
             key={slot.pretty+id}
             position={slot.pretty}
-            name={equip[set[slot.id]].name}
-            imgSrc={equip[set[slot.id]].iconPath}
+            item={equip.get(set[slot.id])}
             obtained={this.state.obtained[set.id][slot.id]}
             toggleHas={(e:ChangeEvent<HTMLInputElement>) =>
               this.toggleHas(e, set.id, slot.id)}

@@ -4,7 +4,7 @@ type AppState = {
   sample: string,
   sets: setType[],
   obtained: obtainedSetType,
-  equipment: equipDict
+  equipment: Map<string,equipType>,
 };
 
 type setType = {
