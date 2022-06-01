@@ -11,9 +11,4 @@ export function DisplaySet(props:{setInfo:setType, open:boolean, children:any}){
 		{props.children}
 	</details>
 	);
- }
- /*
-
-			 name={equipData[setInfo[slot.id]].name}
-			 imgSrc={equipData[setInfo[slot.id]].iconPath}
-			 */
+}
