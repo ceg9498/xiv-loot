@@ -65,7 +65,7 @@ class App extends React.Component<AppProps, AppState>{
 	async getEquip(id:string) {
 		let res = await fetchEquipment(id, this.state.db);
 		this.setState((prevState) => {
-			const nextEntry = { name: res.name, iconPath: res.iconPath, id: res.id, position: "" };
+			const nextEntry = { name: res.name, iconPath: res.iconPath, id: res.id, slotName: res.slotName };
 			return { equipment: prevState.equipment.set(id, nextEntry) }
 		});
 	}

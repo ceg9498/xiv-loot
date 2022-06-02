@@ -42,10 +42,10 @@ type equipDict = {
 }
 
 type equipType = {
-  position:string,
 	id:string,
 	name:string,
 	iconPath:string,
+	slotName:string,
 }
 
 type slotType = {

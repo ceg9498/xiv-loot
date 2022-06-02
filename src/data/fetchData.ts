@@ -29,8 +29,15 @@ async function fetchEquipment(id:string, db:IndexDB|null) {
 			return fetch(`https://etro.gg/api/equipment/${id}/`)
 			.then(response => response.json())
 			.then(data => {
+				const refined = {
+					id: data.id,
+					name: data.name,
+					iconPath: data.iconPath,
+					slotName: data.slotName
+				};
+				console.log(refined, data);
 				console.log(`Item ${id} was not saved`);
-				db.setItem(equipmentStore, data);
+				db.setItem(equipmentStore, refined);
 				return data;
 			});
 		}
