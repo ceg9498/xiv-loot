@@ -9,9 +9,27 @@ async function fetchGearset(id:string, db:IndexDB|null) {
 			return fetch(`https://etro.gg/api/gearsets/${id}/`)
 			.then(response => response.json())
 			.then(data => {
+				const refined = {
+					id: data.id,
+					name: data.name,
+					jobAbbrev: data.jobAbbrev,
+					jobIconPath: data.jobIconPath,
+					weapon: data.weapon,
+					offHand: data.offHand,
+					head: data.head,
+					body: data.body,
+					hands: data.hands,
+					legs: data.legs,
+					feet: data.feet,
+					ears: data.ears,
+					neck: data.neck,
+					wrists: data.wrists,
+					fingerL: data.fingerL,
+					fingerR: data.fingerR,
+				};
 				console.log(`Item ${id} was not saved`);
-				db.setItem(setStore, data);
-				return data;
+				db.setItem(setStore, refined);
+				return refined;
 			})
 		}
 		return res;
