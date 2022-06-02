@@ -35,10 +35,9 @@ async function fetchEquipment(id:string, db:IndexDB|null) {
 					iconPath: data.iconPath,
 					slotName: data.slotName
 				};
-				console.log(refined, data);
 				console.log(`Item ${id} was not saved`);
 				db.setItem(equipmentStore, refined);
-				return data;
+				return refined;
 			});
 		}
 		return res;
