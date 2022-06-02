@@ -6,7 +6,8 @@ The XIV Loot Tracker is being built to allow teams that track loot distribution 
 - [x] Ability to get information about gearsets from [Etro](https://etro.gg/).
 - [x] Basic display for gearsets.
 - [ ] Set up a user login system. This will likely be Discord's OAuth. Note: team pages will be visible to anyone with the link; only those who wish to update information or manage personal gear sets will need to log in.
-- [ ] Set up database connection to store user data.
+- [ ] Set up remote database connection to store user data.
+- [x] Set up IndexedDB to reduce Etro fetches.
 - [ ] Implement team pages.
 - [ ] Implement user pages.
 
