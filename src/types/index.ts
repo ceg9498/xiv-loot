@@ -1,3 +1,5 @@
+import { IndexDB } from '../data/IndexDB';
+
 type AppProps = {};
 type AppState = {
   src: string,
@@ -5,6 +7,8 @@ type AppState = {
   sets: setType[],
   obtained: obtainedSetType,
   equipment: Map<string,equipType>,
+  db: IndexDB,
+};
 };
 
 type setType = {

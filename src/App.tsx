@@ -5,19 +5,25 @@ import {
 	AppState,
  } from './types';
 import { hasKey } from './Utilities';
-import { sampleIDs, slots } from './data/defaults';
-import { fetchGearset, fetchEquipment } from './data/fetchData';
+import {
+  sampleIDs,
+  slots,
+  fetchGearset,
+  fetchEquipment,
+  IndexDB
+} from './data';
 import './App.css';
 
 class App extends React.Component<AppProps, AppState>{
   constructor(props:any) {
     super(props);
     this.state = {
-    src: '',
-    sample: 'PLD',
-    sets: [],
-    equipment: new Map(),
-    obtained: {}
+      src: '',
+      sample: 'PLD',
+      sets: [],
+      equipment: new Map(),
+      obtained: {},
+      db: new IndexDB('xivloot', 60)
     };
     this.setSrc = this.setSrc.bind(this);
     this.getSet = this.getSet.bind(this);
@@ -38,7 +44,7 @@ class App extends React.Component<AppProps, AppState>{
     } else {
       id = this.state.src;
     }
-    let set = await fetchGearset(id);
+    let set = await fetchGearset(id, this.state.db);
     const nSets = [...this.state.sets];
     nSets.push(set);
     let obtained = this.state.obtained;
@@ -57,11 +63,11 @@ class App extends React.Component<AppProps, AppState>{
   }
 
   async getEquip(id:string) {
-    let res = await fetchEquipment(id);
+    let res = await fetchEquipment(id, this.state.db);
     this.setState((prevState) => {
       const nextEntry = { name: res.name, iconPath: res.iconPath, id: res.id, position: "" };
       return { equipment: prevState.equipment.set(id, nextEntry) }
-    })
+    });
   }
 
   toggleHas(e:ChangeEvent<HTMLInputElement>, setId:string, itemId:string) {
