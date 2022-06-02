@@ -9,7 +9,6 @@ type AppState = {
 	equipment: Map<string,equipType>,
 	db: IndexDB,
 };
-};
 
 type setType = {
 	id:string,
