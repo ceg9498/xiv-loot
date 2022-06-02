@@ -2,58 +2,58 @@ import { slotType, Dictionary } from '../types';
 
 const slots: slotType[] = [
 	{
-	 id: 'weapon',
-	 pretty: 'Weapon',
+	id: 'weapon',
+	pretty: 'Weapon',
 	},
 	{
 	id: 'offHand',
-	 pretty: 'Offhand'
+	pretty: 'Offhand'
 	},
 	{
-	 id: 'head',
-	 pretty: 'Head'
+	id: 'head',
+	pretty: 'Head'
 	},
 	{
 	id: 'body',
-	 pretty: 'Body'
+	pretty: 'Body'
 	},
 	{
 	id: 'hands',
-	 pretty: 'Hands'
+	pretty: 'Hands'
 	},
 	{
 	id: 'legs',
-	 pretty: 'Legs'
+	pretty: 'Legs'
 	},
 	{
 	id: 'feet',
-	 pretty: 'Feet'
+	pretty: 'Feet'
 	},
 	{
 	id: 'ears',
-	 pretty: 'Ears'
+	pretty: 'Ears'
 	},
 	{
 	id: 'neck',
-	 pretty: 'Neck'
+	pretty: 'Neck'
 	},
 	{
 	id: 'wrists',
-	 pretty: 'Wrists'
+	pretty: 'Wrists'
 	},
 	{
 	id: 'fingerL',
-	 pretty: 'Left Finger'
+	pretty: 'Left Finger'
 	},
 	{
 	id: 'fingerR',
-	 pretty: 'Right Finger'
+	pretty: 'Right Finger'
 	}
- ];
- const tank = 'tank';
- const heal = 'heal';
- const dps = 'dps';
- const role:Dictionary = {
+];
+const tank = 'tank';
+const heal = 'heal';
+const dps = 'dps';
+const role:Dictionary = {
 	PLD: tank,
 	WAR: tank,
 	DRK: tank,
@@ -73,18 +73,18 @@ const slots: slotType[] = [
 	BLM: dps,
 	SMN: dps,
 	RDM: dps
- }
+}
 
- const sampleIDs:Dictionary = {
-  PLD: '221f9cb0-e058-457e-bb49-b619f5177c46',
-  DRK: 'dda8aef5-41e4-40b6-813c-df306e1f1cee',
-  WHM: 'e78a29e3-1dcf-4e53-bbcf-234f33b2c831',
-  RPR: 'b301e789-96da-42f2-9628-95f68345e35b',
-  MNK: '841ecfdb-41fe-44b4-8764-b3b08e223f8c',
-  MCH: '6b4b1ba5-a821-41a0-b070-b1f50e986f85',
-  SMN: '840a5088-23fa-49c5-a12a-3731ca55b4a6'
- }
+const sampleIDs:Dictionary = {
+	PLD: '221f9cb0-e058-457e-bb49-b619f5177c46',
+	DRK: 'dda8aef5-41e4-40b6-813c-df306e1f1cee',
+	WHM: 'e78a29e3-1dcf-4e53-bbcf-234f33b2c831',
+	RPR: 'b301e789-96da-42f2-9628-95f68345e35b',
+	MNK: '841ecfdb-41fe-44b4-8764-b3b08e223f8c',
+	MCH: '6b4b1ba5-a821-41a0-b070-b1f50e986f85',
+	SMN: '840a5088-23fa-49c5-a12a-3731ca55b4a6'
+}
 
- export {
-	 slots, role, sampleIDs
- }
+export {
+	slots, role, sampleIDs
+}
