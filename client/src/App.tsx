@@ -14,6 +14,9 @@ import {
 } from './data';
 import './App.css';
 
+const homePage = '/';
+const teamPage = '/team';
+
 class App extends React.Component<AppProps, AppState>{
 	constructor(props:any) {
 		super(props);
@@ -28,6 +31,25 @@ class App extends React.Component<AppProps, AppState>{
 		this.setSrc = this.setSrc.bind(this);
 		this.getSet = this.getSet.bind(this);
 		this.toggleHas = this.toggleHas.bind(this);
+	}
+
+	callBackendAPI = async (endpoint:string) => {
+		const response = await fetch(endpoint);
+
+		const body = await response.json();
+
+		if (response.status !== 200) {
+			console.warn(`error status: [${response.status}] ${response.statusText}`);
+			throw Error('error: ',body.message);
+		}
+		return body;
+	};
+
+	componentDidMount() {
+		console.clear();
+		this.callBackendAPI(teamPage)
+			.then(res => console.log('mount test res',res))
+			.catch(err => console.error('[server error]', err));
 	}
 
 	setSrc(e:ChangeEvent<HTMLInputElement>) {
