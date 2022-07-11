@@ -36,6 +36,22 @@ nav input, nav button {
  color: var(--text-color);
 }
 
+article {
+  display: grid;
+  grid-template-areas:
+  'tank dps'
+  'heal dps';
+}
+section#tank-jobs {
+  grid-area: tank;
+}
+section#heal-jobs {
+  grid-area: heal;
+}
+section#dps-jobs {
+  grid-area: dps;
+}
+
 input[type='text'] {
  border: 0px;
  border-bottom: 1px solid var(--accent-color);
