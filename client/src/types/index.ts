@@ -2,6 +2,13 @@ import { IndexDB } from '../data/IndexDB';
 
 type AppProps = {};
 type AppState = {
+	teamId:string,
+};
+
+type TeamProps = {
+	id:string,
+};
+type TeamState = {
 	src: string,
 	sample: string,
 	sets: setType[],
@@ -62,6 +69,8 @@ export type {
 	setType,
 	AppProps,
 	AppState,
+	TeamProps,
+	TeamState,
 	obtainedSetType,
 	obtainedItemType,
 }
