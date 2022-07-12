@@ -6,4 +6,16 @@ function hasKey<O>(obj:O, key:PropertyKey): key is keyof O {
 	return key in obj;
 }
 
-export { hasKey };
+async function callBackendAPI(endpoint:string, value:string) {
+	const response = await fetch(`/${endpoint}/${value}`);
+
+	const body = await response.json();
+
+	if (response.status !== 200) {
+		console.warn(`error status: [${response.status}] ${response.statusText}`);
+		throw Error('error: ',body.message);
+	}
+	return body;
+}
+
+export { hasKey, callBackendAPI };

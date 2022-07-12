@@ -7,7 +7,7 @@ import {
 	equipType,
 	obtainedItemType,
 } from '../types';
-import { hasKey } from '../Utilities';
+import { hasKey, callBackendAPI } from '../Utilities';
 import {
 	slots,
 	role,
@@ -18,18 +18,6 @@ import {
 import '../App.css';
 
 const db = new IndexDB('xivloot', 60);
-
-async function callBackendAPI(endpoint:string, value:string) {
-	const response = await fetch(`/${endpoint}/${value}`);
-
-	const body = await response.json();
-
-	if (response.status !== 200) {
-		console.warn(`error status: [${response.status}] ${response.statusText}`);
-		throw Error('error: ',body.message);
-	}
-	return body;
-}
 
 async function addSetBulk(
 	members:{setID:string, obtained:any}[],
