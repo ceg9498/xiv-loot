@@ -1,5 +1,3 @@
-import { IndexDB } from '../data/IndexDB';
-
 type AppProps = {};
 type AppState = {
 	teamId:string,

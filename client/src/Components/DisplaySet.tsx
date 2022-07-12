@@ -1,45 +1,57 @@
 import { useState } from 'react';
 import { DisplayItem } from './DisplayItem';
-import { setType, obtainedItemType, equipType } from '../types';
+import { equipType } from '../types';
+import { Member } from '../types/storage';
 import { role, slots } from '../data';
 import { hasKey } from '../Utilities';
 
 export function DisplaySet(props:{
 	id:number,
-	setInfo:setType,
+	member:Member,
 	equipment:Map<string, equipType>,
-	open:boolean,
-	obtained:obtainedItemType,
+	updateObtained:Function,
 }){
-	const { id, setInfo, equipment, open } = props;
+	const { id, member, equipment } = props;
 
-	const [obtained, updateObtained] = useState(props.obtained);
+	const [obtained, updateObtained] = useState(member.obtained);
 
 	function toggleHas(
 		itemId:string
 	) {
+		const nValue = !obtained[itemId];
 		updateObtained((obtained) => ({
 			...obtained,
-			[itemId]: !obtained[itemId]
+			[itemId]: nValue
 		}));
+		props.updateObtained(member.name, itemId, nValue);
+	}
+
+	if(member.set !== undefined){
+		const set = member.set;
+		return(
+			<details
+				id={member.name}
+				className={role[set.jobAbbrev]}>
+				<summary>[{set.jobAbbrev}] {member.name}</summary>
+				{slots.map(slot => hasKey(member.set, slot.id)  && set[slot.id]
+					&& equipment.has(set[slot.id]) &&
+					<DisplayItem
+						key={slot.pretty+id}
+						position={slot.pretty}
+						item={equipment.get(set[slot.id])}
+						obtained={obtained[slot.id]}
+						toggleHas={() =>
+						toggleHas(slot.id)} />
+				)}
+			</details>
+		);
 	}
 
 	return(
 		<details
-			id={setInfo.name}
-			open={open}
-			className={role[setInfo.jobAbbrev]}>
-			<summary>{setInfo.jobAbbrev}</summary>
-			{slots.map(slot => hasKey(setInfo, slot.id)  && setInfo[slot.id]
-				&& equipment.has(setInfo[slot.id]) &&
-				<DisplayItem
-					key={slot.pretty+id}
-					position={slot.pretty}
-					item={equipment.get(setInfo[slot.id])}
-					obtained={obtained[slot.id]}
-					toggleHas={() =>
-					toggleHas(slot.id)} />
-			)}
+			id={member.name}>
+			<summary>{member.name}</summary>
+			<p>No set found.</p>
 		</details>
 	);
 }

@@ -37,19 +37,16 @@ nav input, nav button {
 }
 
 article {
-  display: grid;
-  grid-template-areas:
-  'tank dps'
-  'heal dps';
+  display: flex;
+  flex-direction: row;
 }
-section#tank-jobs {
-  grid-area: tank;
-}
-section#heal-jobs {
-  grid-area: heal;
+div#not-dps {
+  display: flex;
+  flex-direction: column;
 }
 section#dps-jobs {
-  grid-area: dps;
+  display: flex;
+  flex-direction: column;
 }
 
 input[type='text'] {

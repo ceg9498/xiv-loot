@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { DisplaySet } from '../Components';
-import {
-	setType,
-	obtainedSetType,
-	equipType,
-	obtainedItemType,
-} from '../types';
+import { equipType } from '../types';
+import { Member, Team } from '../types/storage';
 import { hasKey, callBackendAPI } from '../Utilities';
 import {
 	slots,
@@ -20,26 +16,23 @@ import '../App.css';
 const db = new IndexDB('xivloot', 60);
 
 async function addSetBulk(
-	members:{setID:string, obtained:any}[],
+	team:Team,
 	db:IndexDB,
-	setSets:Function,
 	equipment:Map<string, Object>,
 	addEquipment:Function,
-	updateObtained:Function,
 ) {
-	let sets:setType[] = [];
-	for(let i = 0; i < members.length; i++) {
-		const res = await await fetchGearset(members[i].setID, db);
-		sets.push(res);
+	for(let i = 0; i < team.members.length; i++) {
+		const res = await await fetchGearset(team.members[i].setID, db);
+		team.members[i].set = res;
+		team.members[i].job = res.jobAbbrev;
 		slots.forEach(slot => {
 			if(hasKey(res, slot.id) && res[slot.id] &&
 			!equipment.has(res[slot.id])) {
 				getEquip(res[slot.id], db, addEquipment);
 			}
 		});
-		updateObtained(members[i].setID, members[i].obtained);
 	};
-	setSets(sets);
+	return team;
 }
 
 async function getEquip(id:string, db:IndexDB, addEquipment:Function) {
@@ -48,7 +41,7 @@ async function getEquip(id:string, db:IndexDB, addEquipment:Function) {
 	addEquipment(id, item);
 }
 
-function Team(props:any){
+function TeamPage(props:any){
 	// external id: 62cc99b17433f8f343bcf9c8
 	const { id } = useParams();
 	useEffect(()=> {
@@ -59,69 +52,87 @@ function Team(props:any){
 			})
 			.catch(e => console.error(`[server error] `, e));
 	}, [id]);
-	const [name, setName] = useState('');
-	const [sets, setSets] = useState<setType[]>([]);
+	const [team, setTeam] = useState<Team>();
 	const [equipment, setEquipment] = useState(new Map());
 	const addEquipment = (k:string, v:equipType) => {
 		setEquipment(equipment.set(k, v));
 	}
-	const [obtained, setObtained] = useState<obtainedSetType>({});
-	const updateObtained = (setId:string, values:obtainedItemType) => {
-		const ob = obtained;
-		ob[setId] = values;
-		setObtained(ob);
-	}
 
-	function initData (team:{members:{setID: string; obtained: any;}[],name:string}) {
-		// set the name
-		setName(team.name);
+	async function initData (nTeam:Team) {
+		// save the entire team object
 		// obtain sets listed in Team Data
 		addSetBulk(
-			team.members,
+			nTeam,
 			db,
-			setSets,
 			equipment,
-			addEquipment,
-			updateObtained);
+			addEquipment)
+			.then(res => setTeam(res));
+	}
+
+	function updateObtained(name:string, itemId:string, value:boolean) {
+		// call server to update the database entry
+		// Data needed:
+		// team id
+		// member id
+		// piece name
+
+		// first, update the object locally
+		if(team){
+			const update = team;
+			for(let i = 0; i < update.members.length; i++) {
+				if(update.members[i].name === name) {
+					update.members[i].obtained[itemId] = value;
+					console.log('updating',update.members[i]);
+					break;
+				}
+			}
+			setTeam({...update});
+		}
+
+		// TODO: send the updated object to the database
+		// do NOT include members[i].job or members[i].set!
 	}
 
 	return(
 		<>
 			<nav>
-				<h1>{name}</h1>
+				<h1>{team && (team.name || team.id)}</h1>
 			</nav>
 			<article>
-				<section id='tank-jobs'>
-					{sets.filter(set => role[set.jobAbbrev] === 'tank').map((set, id) =>
-						<DisplaySet
-							key={id}
-							id={id}
-							setInfo={set}
-							equipment={equipment}
-							open={sets.length === 1 ? true : false}
-							obtained={obtained[set.id]} />
-					)}
-				</section>
-				<section id='heal-jobs'>
-					{sets.filter(set => role[set.jobAbbrev] === 'heal').map((set, id) =>
-						<DisplaySet
-							key={id}
-							id={id}
-							setInfo={set}
-							equipment={equipment}
-							open={sets.length === 1 ? true : false}
-							obtained={obtained[set.id]} />
-					)}
-				</section>
+				<div id='not-dps'>
+					<section id='tank-jobs'>
+						{team && team.members.filter(member =>
+							member.job && role[member.job] === 'tank').map((member, id) =>
+							<DisplaySet
+								key={id}
+								id={id}
+								member={member}
+								equipment={equipment}
+								updateObtained={updateObtained} />
+
+						)}
+					</section>
+					<section id='heal-jobs'>
+						{team && team.members.filter(member =>
+							member.job && role[member.job] === 'heal').map((member, id) =>
+							<DisplaySet
+								key={id}
+								id={id}
+								member={member}
+								equipment={equipment}
+								updateObtained={updateObtained} />
+						)}
+					</section>
+				</div>
 				<section id='dps-jobs'>
-					{sets.filter(set => role[set.jobAbbrev] === 'dps').map((set, id) =>
+					{team && team.members.filter(member =>
+						member.job && role[member.job] === 'dps').map((member, id) =>
 						<DisplaySet
 							key={id}
 							id={id}
-							setInfo={set}
+							member={member}
 							equipment={equipment}
-							open={sets.length === 1 ? true : false}
-							obtained={obtained[set.id]} />
+							updateObtained={updateObtained} />
 					)}
 				</section>
 			</article>
@@ -129,4 +140,4 @@ function Team(props:any){
 	);
 }
 
-export default Team;
+export default TeamPage;

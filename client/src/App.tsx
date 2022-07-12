@@ -8,7 +8,7 @@ import {
 	AppProps,
 	AppState,
 } from './types';
-import Team from './Pages/team';
+import TeamPage from './Pages/team';
 import ErrorPage from './Pages/error';
 
 class App extends React.Component<AppProps, AppState>{
@@ -46,7 +46,7 @@ class App extends React.Component<AppProps, AppState>{
 		return(
 		<Router>
 			<Routes>
-				<Route path='team/:id' element={<Team />} />
+				<Route path='team/:id' element={<TeamPage />} />
 				<Route path='*' element={<ErrorPage msg="no team requested" />} />
 			</Routes>
 		</Router>
