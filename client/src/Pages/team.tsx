@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { DisplaySet } from '../Components';
 import { equipType } from '../types';
-import { Member, Team } from '../types/storage';
+import { Team } from '../types/storage';
 import { hasKey, callBackendAPI } from '../Utilities';
 import {
 	slots,
