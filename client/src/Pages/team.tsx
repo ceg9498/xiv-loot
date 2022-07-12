@@ -15,6 +15,12 @@ import '../App.css';
 
 const db = new IndexDB('xivloot', 60);
 
+const emptyTeam = {
+	_id: "",
+	name: "",
+	members: []
+}
+
 async function addSetBulk(
 	team:Team,
 	db:IndexDB,
@@ -52,7 +58,7 @@ function TeamPage(props:any){
 			})
 			.catch(e => console.error(`[server error] `, e));
 	}, [id]);
-	const [team, setTeam] = useState<Team>();
+	const [team, setTeam] = useState<Team>({...emptyTeam});
 	const [equipment, setEquipment] = useState(new Map());
 	const addEquipment = (k:string, v:equipType) => {
 		setEquipment(equipment.set(k, v));
@@ -70,33 +76,42 @@ function TeamPage(props:any){
 	}
 
 	function updateObtained(name:string, itemId:string, value:boolean) {
-		// call server to update the database entry
-		// Data needed:
-		// team id
-		// member id
-		// piece name
+		// ensure there's a team to be updated
+		if(!team) return;
 
-		// first, update the object locally
-		if(team){
-			const update = team;
-			for(let i = 0; i < update.members.length; i++) {
-				if(update.members[i].name === name) {
-					update.members[i].obtained[itemId] = value;
-					console.log('updating',update.members[i]);
-					break;
-				}
+		// update the object locally
+		const update = team;
+		// remove all object references with the payload
+		const payload = JSON.parse(JSON.stringify(team));
+		for(let i = 0; i < update.members.length; i++) {
+			if(update.members[i].name === name) {
+				update.members[i].obtained[itemId] = value;
+				payload.members[i].obtained[itemId] = value;
 			}
-			setTeam({...update});
+			// do NOT include members[i].job or members[i].set in payload
+			delete payload.members[i].job;
+			delete payload.members[i].set;
 		}
+		// update the local copy
+		setTeam(update);
 
-		// TODO: send the updated object to the database
-		// do NOT include members[i].job or members[i].set!
+		// TODO: call server to update the database entry
+		// this will use the team ID and update the entire object
+		fetch(`/team/update/${id}`, {
+			method: "POST",
+			headers: {
+				'Content-type': "application/json"
+			},
+			body: JSON.stringify(payload)
+		})
+		.then(res => res.json())
+		.then(data => console.log('response:',data));
 	}
 
 	return(
 		<>
 			<nav>
-				<h1>{team && (team.name || team.id)}</h1>
+				<h1>{team && (team.name || team._id)}</h1>
 			</nav>
 			<article>
 				<div id='not-dps'>

@@ -7,7 +7,7 @@ interface User {
 }
 
 interface Team {
-	id: string;
+	_id: string;
 	name: string;
 	members: Member[];
 }

@@ -5,6 +5,7 @@ dotenv.config();
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => log(`Listening on port ${port}`));
+app.use(express.json())
 
 // Database connection
 const { MongoClient, ObjectId } = require('mongodb');
@@ -15,8 +16,15 @@ app.get('/team/:id', (req, res) => {
 	.then(result => { res.send(result) });
 });
 
-app.get('/team/update/:teamid/:setid', (req, res) => {
-
+app.post('/team/update/:teamid', (req, res) => {
+	if(req.params.teamid !== req.body._id) {
+		log("IDs do not match!");
+		res.sendStatus(400).send({error: "IDs do not match."});
+	} else {
+		updateObtained(req.params.teamid, req.body)
+		.then((result) => res.send({ok:true, result:result}))
+		.catch((e) => console.error('[server] (L28)', e));
+	}
 });
 
 async function findTeamByID(id) {
@@ -40,15 +48,15 @@ async function findTeamByID(id) {
 	}
 }
 
-async function updateObtained(id, obtained) {
+async function updateObtained(id, data) {
 	try {
 		await client.connect();
 		const db = await client.db("xiv-loot");
 		const teams = await db.collection("teams");
 
 		const result = await teams.findOneAndUpdate(
-			ObjectId(id),
-			obtained
+			{_id: ObjectId(id)},
+			{$set: {members: data.members}}
 		);
 
 		if (result) {
