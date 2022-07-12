@@ -1,9 +1,15 @@
 import React from 'react';
 import {
+	BrowserRouter as Router,
+	Routes,
+	Route,
+} from 'react-router-dom';
+import {
 	AppProps,
 	AppState,
 } from './types';
 import Team from './Pages/team';
+import ErrorPage from './Pages/error';
 
 class App extends React.Component<AppProps, AppState>{
 	constructor(props:any) {
@@ -27,23 +33,23 @@ class App extends React.Component<AppProps, AppState>{
 
 	componentDidMount() {
 		console.clear();
-		// obtain sets listed in Team Data
+		/*/ obtain sets listed in Team Data
 		this.callBackendAPI('/team')
 			.then(res => {
 				console.log('mount test res',res);
 			})
 			.catch(err => console.error('[server error]', err));
+			*/
 	}
 
 	render(){
 		return(
-		<>
-		{this.state.teamId !== '' ?
-			<Team id={this.state.teamId} />
-			:
-			<div><span>No Team Requested</span></div>
-		}
-		</>
+		<Router>
+			<Routes>
+				<Route path='team/:id' element={<Team />} />
+				<Route path='*' element={<ErrorPage msg="no team requested" />} />
+			</Routes>
+		</Router>
 		);
 	}
 }

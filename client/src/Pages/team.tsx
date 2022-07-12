@@ -1,13 +1,14 @@
-import React, { ChangeEvent } from 'react';
-import { DisplaySet, DisplayItem } from '../Components';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { DisplaySet } from '../Components';
 import {
-	TeamProps,
-	TeamState,
 	setType,
+	obtainedSetType,
+	equipType,
+	obtainedItemType,
 } from '../types';
 import { hasKey } from '../Utilities';
 import {
-	sampleIDs,
 	slots,
 	role,
 	fetchGearset,
@@ -15,190 +16,129 @@ import {
 	IndexDB
 } from '../data';
 import '../App.css';
-import { team } from '../data/temp';
 
-class Team extends React.Component<TeamProps, TeamState>{
-	constructor(props:any) {
-		super(props);
-		this.state = {
-			src: '',
-			sample: 'PLD',
-			sets: [],
-			equipment: new Map(),
-			obtained: {},
-			db: new IndexDB('xivloot', 60)
-		};
-		this.addSetBulk = this.addSetBulk.bind(this);
-		this.setSrc = this.setSrc.bind(this);
-		this.getSet = this.getSet.bind(this);
-		this.toggleHas = this.toggleHas.bind(this);
+const db = new IndexDB('xivloot', 60);
+
+async function callBackendAPI(endpoint:string, value:string) {
+	const response = await fetch(`/${endpoint}/${value}`);
+
+	const body = await response.json();
+
+	if (response.status !== 200) {
+		console.warn(`error status: [${response.status}] ${response.statusText}`);
+		throw Error('error: ',body.message);
 	}
+	return body;
+}
 
-	callBackendAPI = async (endpoint:string) => {
-		const response = await fetch(endpoint);
-
-		const body = await response.json();
-
-		if (response.status !== 200) {
-			console.warn(`error status: [${response.status}] ${response.statusText}`);
-			throw Error('error: ',body.message);
-		}
-		return body;
-	};
-
-	componentDidMount() {
-		console.clear();
-		// obtain sets listed in Team Data
-		this.addSetBulk(team.members);
-		this.callBackendAPI('/team')
-			.then(res => {
-				console.log('mount test res',res);
-			})
-			.catch(err => console.error('[server error]', err));
-	}
-
-	setSrc(e:ChangeEvent<HTMLInputElement>) {
-		e.preventDefault();
-		this.setState({
-		src: e.target.value
-		});
-	}
-
-	async addSetBulk(members:{setID:string, obtained:any}[]) {
-		let sets:setType[] = [];
-		let obtained = this.state.obtained;
-		for(let i = 0; i < members.length; i++) {
-			const res = await this.getSet(members[i].setID);
-			sets.push(res);
-			slots.forEach(slot => {
-				if(hasKey(res, slot.id) && res[slot.id] &&
-				!this.state.equipment.has(res[slot.id])) {
-					this.getEquip(res[slot.id]);
-				}
-			});
-			obtained[members[i].setID] = members[i].obtained;
-		};
-		this.setState({
-			sets: sets,
-			obtained: obtained,
-		}, () => {setTimeout(() => {this.forceUpdate()}, 1000);});
-
-		/*
-		let obtained = this.state.obtained;
-		obtained[set.id] = {};
+async function addSetBulk(
+	members:{setID:string, obtained:any}[],
+	db:IndexDB,
+	setSets:Function,
+	equipment:Map<string, Object>,
+	addEquipment:Function,
+	updateObtained:Function,
+) {
+	let sets:setType[] = [];
+	for(let i = 0; i < members.length; i++) {
+		const res = await await fetchGearset(members[i].setID, db);
+		sets.push(res);
 		slots.forEach(slot => {
-			if(hasKey(set, slot.id) && set[slot.id] &&
-			!this.state.equipment.has(set[slot.id])) {
-				this.getEquip(set[slot.id]);
-				obtained[set.id][slot.id] = false;
+			if(hasKey(res, slot.id) && res[slot.id] &&
+			!equipment.has(res[slot.id])) {
+				getEquip(res[slot.id], db, addEquipment);
 			}
 		});
-		this.setState({
-			sets: nSets,
-			obtained: obtained
-		}, () => {setTimeout(() => {this.forceUpdate()}, 1000);});
-		*/
+		updateObtained(members[i].setID, members[i].obtained);
+	};
+	setSets(sets);
+}
+
+async function getEquip(id:string, db:IndexDB, addEquipment:Function) {
+	let res = await fetchEquipment(id, db);
+	const item = { name: res.name, iconPath: res.iconPath, id: res.id, slotName: res.slotName };
+	addEquipment(id, item);
+}
+
+function Team(props:any){
+	// external id: 62cc99b17433f8f343bcf9c8
+	const { id } = useParams();
+	useEffect(()=> {
+		if(id)
+			callBackendAPI('team', id)
+			.then(res => {
+				initData(res);
+			})
+			.catch(e => console.error(`[server error] `, e));
+	}, [id]);
+	const [name, setName] = useState('');
+	const [sets, setSets] = useState<setType[]>([]);
+	const [equipment, setEquipment] = useState(new Map());
+	const addEquipment = (k:string, v:equipType) => {
+		setEquipment(equipment.set(k, v));
+	}
+	const [obtained, setObtained] = useState<obtainedSetType>({});
+	const updateObtained = (setId:string, values:obtainedItemType) => {
+		const ob = obtained;
+		ob[setId] = values;
+		setObtained(ob);
 	}
 
-	async getSet(id?:string) {
-		if(!id) {
-			if(this.state.src === '') {
-				id = sampleIDs[this.state.sample];
-			} else {
-				id = this.state.src;
-			}
-		}
-		return await fetchGearset(id, this.state.db);
+	function initData (team:{members:{setID: string; obtained: any;}[],name:string}) {
+		// set the name
+		setName(team.name);
+		// obtain sets listed in Team Data
+		addSetBulk(
+			team.members,
+			db,
+			setSets,
+			equipment,
+			addEquipment,
+			updateObtained);
 	}
 
-	async getEquip(id:string) {
-		let res = await fetchEquipment(id, this.state.db);
-		this.setState((prevState) => {
-			const nextEntry = { name: res.name, iconPath: res.iconPath, id: res.id, slotName: res.slotName };
-			return { equipment: prevState.equipment.set(id, nextEntry) }
-		});
-	}
-
-	toggleHas(e:ChangeEvent<HTMLInputElement>, setId:string, itemId:string) {
-		let obtained = this.state.obtained;
-		obtained[setId][itemId] = !obtained[setId][itemId];
-		this.setState({
-			obtained: obtained
-		});
-	}
-
-	render(){
-		const equip = this.state.equipment;
-		return(
+	return(
 		<>
 			<nav>
-				<h1>{team.name}</h1>
+				<h1>{name}</h1>
 			</nav>
 			<article>
 				<section id='tank-jobs'>
-					{this.state.sets.filter(set => role[set.jobAbbrev] === 'tank').map((set, id) =>
+					{sets.filter(set => role[set.jobAbbrev] === 'tank').map((set, id) =>
 						<DisplaySet
 							key={id}
+							id={id}
 							setInfo={set}
-							open={this.state.sets.length === 1 ? true : false}>
-							{slots.map(slot => hasKey(set, slot.id)  && set[slot.id]
-							&& equip.has(set[slot.id]) &&
-							<DisplayItem
-								key={slot.pretty+id}
-								position={slot.pretty}
-								item={equip.get(set[slot.id])}
-								obtained={this.state.obtained[set.id][slot.id]}
-								toggleHas={(e:ChangeEvent<HTMLInputElement>) =>
-									this.toggleHas(e, set.id, slot.id)}
-								/>
-							)}
-						</DisplaySet>
+							equipment={equipment}
+							open={sets.length === 1 ? true : false}
+							obtained={obtained[set.id]} />
 					)}
 				</section>
 				<section id='heal-jobs'>
-					{this.state.sets.filter(set => role[set.jobAbbrev] === 'heal').map((set, id) =>
+					{sets.filter(set => role[set.jobAbbrev] === 'heal').map((set, id) =>
 						<DisplaySet
 							key={id}
+							id={id}
 							setInfo={set}
-							open={this.state.sets.length === 1 ? true : false}>
-							{slots.map(slot => hasKey(set, slot.id)  && set[slot.id]
-							&& equip.has(set[slot.id]) &&
-							<DisplayItem
-								key={slot.pretty+id}
-								position={slot.pretty}
-								item={equip.get(set[slot.id])}
-								obtained={this.state.obtained[set.id][slot.id]}
-								toggleHas={(e:ChangeEvent<HTMLInputElement>) =>
-									this.toggleHas(e, set.id, slot.id)}
-								/>
-							)}
-						</DisplaySet>
+							equipment={equipment}
+							open={sets.length === 1 ? true : false}
+							obtained={obtained[set.id]} />
 					)}
 				</section>
 				<section id='dps-jobs'>
-					{this.state.sets.filter(set => role[set.jobAbbrev] === 'dps').map((set, id) =>
+					{sets.filter(set => role[set.jobAbbrev] === 'dps').map((set, id) =>
 						<DisplaySet
 							key={id}
+							id={id}
 							setInfo={set}
-							open={this.state.sets.length === 1 ? true : false}>
-							{slots.map(slot => hasKey(set, slot.id)  && set[slot.id]
-							&& equip.has(set[slot.id]) &&
-							<DisplayItem
-								key={slot.pretty+id}
-								position={slot.pretty}
-								item={equip.get(set[slot.id])}
-								obtained={this.state.obtained[set.id][slot.id]}
-								toggleHas={(e:ChangeEvent<HTMLInputElement>) =>
-									this.toggleHas(e, set.id, slot.id)}
-								/>
-							)}
-						</DisplaySet>
+							equipment={equipment}
+							open={sets.length === 1 ? true : false}
+							obtained={obtained[set.id]} />
 					)}
 				</section>
 			</article>
 		</>
-		);
-	}
+	);
 }
 
 export default Team;

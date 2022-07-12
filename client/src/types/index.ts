@@ -5,18 +5,6 @@ type AppState = {
 	teamId:string,
 };
 
-type TeamProps = {
-	id:string,
-};
-type TeamState = {
-	src: string,
-	sample: string,
-	sets: setType[],
-	obtained: obtainedSetType,
-	equipment: Map<string,equipType>,
-	db: IndexDB,
-};
-
 type setType = {
 	id:string,
 	name:string,
@@ -69,8 +57,6 @@ export type {
 	setType,
 	AppProps,
 	AppState,
-	TeamProps,
-	TeamState,
 	obtainedSetType,
 	obtainedItemType,
 }
