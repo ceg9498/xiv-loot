@@ -66,6 +66,8 @@ select {
  background-color: var(--bg-color);
  color: var(--text-color);
  border: none;
+ border-bottom: 2px solid var(--accent-color);
+ font-size: 18px;
 }
 button {
  border: 1px solid var(--accent-color);

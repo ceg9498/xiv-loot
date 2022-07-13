@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { DisplaySet } from '../Components';
+import { DisplaySet, Distributor } from '../Components';
 import { equipType } from '../types';
 import { Team } from '../types/storage';
 import { hasKey, callBackendAPI } from '../Utilities';
@@ -75,7 +75,7 @@ function TeamPage(props:any){
 			.then(res => setTeam(res));
 	}
 
-	function updateObtained(name:string, itemId:string, value:boolean) {
+	function updateObtained(name:string, itemId:string, value:boolean = true) {
 		// ensure there's a team to be updated
 		if(!team) return;
 
@@ -93,7 +93,7 @@ function TeamPage(props:any){
 			delete payload.members[i].set;
 		}
 		// update the local copy
-		setTeam(update);
+		setTeam({...update});
 
 		// TODO: call server to update the database entry
 		// this will use the team ID and update the entire object
@@ -112,6 +112,11 @@ function TeamPage(props:any){
 		<>
 			<nav>
 				<h1>{team && (team.name || team._id)}</h1>
+				<Distributor
+					members={team.members.map(({name}) => name)}
+					giveItem={(name:string, item:string) => {
+						updateObtained(name, item, true);
+					}} />
 			</nav>
 			<article>
 				<div id='not-dps'>
