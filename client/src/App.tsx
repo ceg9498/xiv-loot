@@ -8,7 +8,7 @@ import {
 	AppProps,
 	AppState,
 } from './types';
-import { ErrorPage, TeamPage } from './Pages';
+import { ErrorPage, NewUser, TeamPage } from './Pages';
 
 class App extends React.Component<AppProps, AppState>{
 	constructor(props:any) {
@@ -46,6 +46,7 @@ class App extends React.Component<AppProps, AppState>{
 		<Router>
 			<Routes>
 				<Route path='team/:id' element={<TeamPage />} />
+				<Route path='team/:teamid/:userid' element={<NewUser />} />
 				<Route path='*' element={<ErrorPage msg="no team requested" />} />
 			</Routes>
 		</Router>

@@ -60,6 +60,7 @@ function TeamPage(props:any){
 			.catch(e => console.error(`[server error] `, e));
 	}, [id]);
 
+	const [user, setUser] = useState<string>('');
 	const [team, setTeam] = useState<Team>({...emptyTeam});
 	const [equipment, setEquipment] = useState(new Map());
 	const addEquipment = (k:string, v:equipType) => {
@@ -75,6 +76,10 @@ function TeamPage(props:any){
 			equipment,
 			addEquipment)
 		.then(res => setTeam(res));
+	}
+
+	async function login() {
+
 	}
 
 	function updateObtained(name:string, itemId:string, value:boolean = true) {
