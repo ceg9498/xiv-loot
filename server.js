@@ -27,6 +27,13 @@ app.post('/team/update/:teamid', (req, res) => {
 	}
 });
 
+app.get('/team/:teamid/:userid', (req, res) => {
+	// allow team member to "claim" character
+	// TODO: create invite page, displaying team name and character name
+	// TODO: prompt user to log in via Discord
+	// TODO: find team teamid and replace userid with the id from Discord
+});
+
 async function findTeamByID(id) {
 	try {
 		await client.connect();
