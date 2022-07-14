@@ -56,7 +56,8 @@ async function updateObtained(id, data) {
 
 		const result = await teams.findOneAndUpdate(
 			{_id: ObjectId(id)},
-			{$set: {members: data.members}}
+			{$set: {members: data.members}},
+			{returnDocument: 'after'}
 		);
 
 		if (result) {

@@ -36,7 +36,7 @@ nav input, nav button {
  color: var(--text-color);
 }
 
-article {
+#team-display {
   display: flex;
   flex-direction: row;
 }

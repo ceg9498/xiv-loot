@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { DisplaySet, Distributor } from '../Components';
+import { Distributor, Login } from '../Components';
 import { equipType } from '../types';
 import { Team } from '../types/storage';
-import { hasKey, callBackendAPI } from '../Utilities';
+import { hasKey, callBackendAPI, updateDB } from '../Utilities';
 import {
 	slots,
-	role,
 	fetchGearset,
 	fetchEquipment,
 	IndexDB
 } from '../data';
 import '../App.css';
+import TeamDisplay from './teamDisplay';
+import TeamEdit from './teamEdit';
 
 const db = new IndexDB('xivloot', 60);
 
@@ -58,21 +59,22 @@ function TeamPage(props:any){
 			})
 			.catch(e => console.error(`[server error] `, e));
 	}, [id]);
+
 	const [team, setTeam] = useState<Team>({...emptyTeam});
 	const [equipment, setEquipment] = useState(new Map());
 	const addEquipment = (k:string, v:equipType) => {
 		setEquipment(equipment.set(k, v));
 	}
+	const [editing, setEditing] = useState<boolean>(false);
 
 	async function initData (nTeam:Team) {
-		// save the entire team object
 		// obtain sets listed in Team Data
 		addSetBulk(
 			nTeam,
 			db,
 			equipment,
 			addEquipment)
-			.then(res => setTeam(res));
+		.then(res => setTeam(res));
 	}
 
 	function updateObtained(name:string, itemId:string, value:boolean = true) {
@@ -95,67 +97,86 @@ function TeamPage(props:any){
 		// update the local copy
 		setTeam({...update});
 
-		// TODO: call server to update the database entry
+		// call server to update the database entry
 		// this will use the team ID and update the entire object
-		fetch(`/team/update/${id}`, {
-			method: "POST",
-			headers: {
-				'Content-type': "application/json"
-			},
-			body: JSON.stringify(payload)
-		})
-		.then(res => res.json())
-		.then(data => console.log('response:',data));
+		updateDB(payload._id, payload);
+	}
+
+	function updateMember() {
+		if(!team) return;
+
+		// remove all object references with the payload
+		const payload = JSON.parse(JSON.stringify(team));
+
+		for(let i = 0; i < payload.members.length; i++) {
+			// If there's empty member names, delete them
+			if(payload.members[i].name === ''){
+				delete payload.members[i];
+			} else {
+				// do NOT include members[i].job or members[i].set in payload
+				delete payload.members[i].job;
+				delete payload.members[i].set;
+			}
+		}
+
+		updateDB(payload._id, payload);
+
+		// run an update
+		initData(payload).then(res => console.log('done',res));
+	}
+
+	function removeMember(name:string) {
+		if(!team) return;
+
+		// update the object locally
+		const update = team;
+		// remove all object references with the payload
+		const payload = JSON.parse(JSON.stringify(team));
+		for(let i = 0; i < update.members.length; i++) {
+			if(update.members[i].name === name) {
+				update.members.splice(i,1);
+				payload.members.splice(i,1);
+			} else {
+				// do NOT include members[i].job or members[i].set in payload
+				delete payload.members[i].job;
+				delete payload.members[i].set;
+			}
+		}
+
+		setTeam({...update});
+		updateDB(payload._id, payload);
 	}
 
 	return(
 		<>
 			<nav>
 				<h1>{team && (team.name || team._id)}</h1>
-				<Distributor
-					members={team.members.map(({name}) => name)}
-					giveItem={(name:string, item:string) => {
-						updateObtained(name, item, true);
-					}} />
+				<button onClick={(e)=>{e.preventDefault(); setEditing(!editing)}}>
+					{editing ?
+						"Finish Editing"
+					:
+						"Edit"
+					}
+				</button>
+				{!editing &&
+					<Distributor
+						members={team.members.map(({name}) => name)}
+						giveItem={(name:string, item:string) => {
+							updateObtained(name, item, true);
+						}} />
+				}
+				<Login />
 			</nav>
-			<article>
-				<div id='not-dps'>
-					<section id='tank-jobs'>
-						{team && team.members.filter(member =>
-							member.job && role[member.job] === 'tank').map((member, id) =>
-							<DisplaySet
-								key={id}
-								id={id}
-								member={member}
-								equipment={equipment}
-								updateObtained={updateObtained} />
-
-						)}
-					</section>
-					<section id='heal-jobs'>
-						{team && team.members.filter(member =>
-							member.job && role[member.job] === 'heal').map((member, id) =>
-							<DisplaySet
-								key={id}
-								id={id}
-								member={member}
-								equipment={equipment}
-								updateObtained={updateObtained} />
-						)}
-					</section>
-				</div>
-				<section id='dps-jobs'>
-					{team && team.members.filter(member =>
-						member.job && role[member.job] === 'dps').map((member, id) =>
-						<DisplaySet
-							key={id}
-							id={id}
-							member={member}
-							equipment={equipment}
-							updateObtained={updateObtained} />
-					)}
-				</section>
-			</article>
+			{editing ?
+				<TeamEdit team={team}
+					updateMember={updateMember}
+					removeMember={removeMember} />
+			:
+				<TeamDisplay
+					team={team}
+					equipment={equipment}
+					updateObtained={updateObtained} />
+			}
 		</>
 	);
 }

@@ -1,0 +1,92 @@
+#team-edit {
+	margin: 20px;
+}
+
+ul {
+	list-style-type: none;
+	padding: 5px;
+	display: inline-block;
+	width: 540px;
+}
+
+li {
+	border: 1px solid var(--accent-color);
+	border-radius: 5px;
+	padding: 10px;
+	margin: 7px 0;
+
+	line-height: 1.5em;
+
+	display: grid;
+	grid-template-areas: 'info buttons';
+	grid-template-columns: '2fr 1fr';
+}
+
+div.member-info-text {
+	grid-area: info;
+}
+
+div.member-info-buttons {
+	grid-area: buttons;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: end;
+}
+
+button.emoji {
+	font-size: 1.5em;
+	background-color: transparent;
+	height: 1.5em;
+	width: 1.5em;
+	padding: 0px;
+	border-radius: 50%;
+	border: none;
+	cursor: pointer;
+}
+button.emoji:hover {
+	background-color: var(--accent-color);
+}
+
+span.property {
+	display: inline-block;
+	font-weight: bold;
+	margin-right: .5em;
+	color: var(--accent-color);
+	min-width: 60px;
+}
+
+span.value {
+	display: inline-block;
+	min-width: 330px;
+	margin: 3px 0;
+	padding: 3px 10px;
+	font-size: 1em;
+}
+
+input[type='text'] {
+	width: 330px;
+	background-color: var(--bg-color);
+	border: none;
+	color: var(--text-color);
+	font-size: 1em;
+	border-radius: 3px;
+	margin: 3px 0;
+}
+input[type='text']:focus {
+	width: 330px;
+}
+
+button.add-member {
+	background-color: var(--accent-color);
+	color: var(--bg-color);
+	font-weight: bold;
+	font-size: 1em;
+	border: none;
+	border-radius: 3px;
+	padding: 10px 20px;
+}
+button.add-member:hover {
+	background-color: var(--text-color);
+}

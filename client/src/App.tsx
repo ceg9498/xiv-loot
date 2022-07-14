@@ -8,8 +8,7 @@ import {
 	AppProps,
 	AppState,
 } from './types';
-import TeamPage from './Pages/team';
-import ErrorPage from './Pages/error';
+import { ErrorPage, TeamPage } from './Pages';
 
 class App extends React.Component<AppProps, AppState>{
 	constructor(props:any) {
