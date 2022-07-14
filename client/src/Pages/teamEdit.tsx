@@ -122,6 +122,7 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 									onClick={(e)=>{
 										e.preventDefault();
 										let member = newMember;
+										member.id = Date.now() + "";
 										member.name = nName;
 										member.setID = nSetID;
 										team.members.push(member);
