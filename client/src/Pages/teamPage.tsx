@@ -158,6 +158,7 @@ function TeamPage(props:any){
 						"Edit"
 					}
 				</button>
+				<span className="grow"></span>
 				{!editing &&
 					<Distributor
 						members={team.members.map(({name}) => name)}

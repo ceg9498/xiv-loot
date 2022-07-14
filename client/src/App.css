@@ -49,6 +49,10 @@ section#dps-jobs {
   flex-direction: column;
 }
 
+.grow {
+  flex-grow: 1;
+}
+
 input[type='text'] {
  border: 0px;
  border-bottom: 1px solid var(--accent-color);
