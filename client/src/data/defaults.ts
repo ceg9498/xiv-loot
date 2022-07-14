@@ -106,7 +106,6 @@ const emptyObtained:obtainedItemType = {
 const newMember:Member = {
 	id: '',
 	name: '',
-	discordId: null,
 	setID: '',
 	obtained: emptyObtained
 }

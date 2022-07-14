@@ -19,7 +19,6 @@ interface Member {
 	id: string;
 	name: string;
 	job?: string;
-	discordId: string|null;
 	setID: string;
 	set?: setType;
 	obtained: obtainedItemType;
