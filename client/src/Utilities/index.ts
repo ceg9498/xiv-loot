@@ -1,5 +1,3 @@
-import { Team } from '../types/storage';
-
 /**
  * Indexing Objects in Typescript:
  * https://dev.to/mapleleaf/indexing-objects-in-typescript-1cgi
@@ -20,16 +18,28 @@ async function callBackendAPI(endpoint:string, value:string) {
 	return body;
 }
 
-function updateDB(id:string, data:Team) {
-	fetch(`/team/update/${id}`, {
-		method: "POST",
-		headers: {
-			'Content-type': "application/json"
-		},
-		body: JSON.stringify(data)
-	})
-	.then(res => res.json())
-	.then(data => console.log('response:',data.result.value));
+function updateDB(type:string, id:string, data:any) {
+	if(id === 'new') {
+		fetch(`/${type}/add/${id}`, {
+			method: "POST",
+			headers: {
+				'Content-type': "application/json"
+			},
+			body: JSON.stringify(data)
+		})
+		.then(res => res.json())
+		.catch(e => console.error('[server error](updateDB:new)', e, JSON.stringify(data)));
+	} else {
+		fetch(`/${type}/update/${id}`, {
+			method: "POST",
+			headers: {
+				'Content-type': "application/json"
+			},
+			body: JSON.stringify(data)
+		})
+		.then(res => res.json())
+		.catch(e => console.error('[server error](updateDB)', e, JSON.stringify(data)));
+	}
 }
 
 export { hasKey, callBackendAPI, updateDB };

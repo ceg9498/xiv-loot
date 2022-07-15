@@ -49,7 +49,8 @@ export function DisplaySet(props:{
 
 	return(
 		<details
-			id={member.name}>
+			id={member.name}
+			className='unknown-role'>
 			<summary>{member.name}</summary>
 			<p>No set found.</p>
 		</details>

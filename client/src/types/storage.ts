@@ -9,14 +9,14 @@ interface User {
 interface Team {
 	_id: string;
 	name: string;
-	members: Member[];
+	members: string[]; // list of IDs
 }
 
 /**
  * SetAndUser allows the set data to be associated with a User
  */
 interface Member {
-	id: string;
+	_id: string;
 	name: string;
 	job?: string;
 	setID: string;

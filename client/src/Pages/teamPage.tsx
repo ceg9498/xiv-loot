@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Distributor, Login } from '../Components';
 import { equipType } from '../types';
-import { Team } from '../types/storage';
+import { Member, Team } from '../types/storage';
 import { hasKey, callBackendAPI, updateDB } from '../Utilities';
 import {
 	slots,
@@ -22,24 +22,20 @@ const emptyTeam = {
 	members: []
 }
 
-async function addSetBulk(
-	team:Team,
+async function addSet(
+	member:Member,
 	db:IndexDB,
 	equipment:Map<string, Object>,
 	addEquipment:Function,
 ) {
-	for(let i = 0; i < team.members.length; i++) {
-		const res = await await fetchGearset(team.members[i].setID, db);
-		team.members[i].set = res;
-		team.members[i].job = res.jobAbbrev;
-		slots.forEach(slot => {
-			if(hasKey(res, slot.id) && res[slot.id] &&
-			!equipment.has(res[slot.id])) {
-				getEquip(res[slot.id], db, addEquipment);
-			}
-		});
-	};
-	return team;
+	const res = await fetchGearset(member.setID, db);
+	slots.forEach(slot => {
+		if(hasKey(res, slot.id) && res[slot.id] &&
+		!equipment.has(res[slot.id])) {
+			getEquip(res[slot.id], db, addEquipment);
+		}
+	});
+	return {job:res.jobAbbrev, set:{...res}};
 }
 
 async function getEquip(id:string, db:IndexDB, addEquipment:Function) {
@@ -49,107 +45,136 @@ async function getEquip(id:string, db:IndexDB, addEquipment:Function) {
 }
 
 function TeamPage(props:any){
-	// external id: 62cc99b17433f8f343bcf9c8
+	// team id: 62cc99b17433f8f343bcf9c8
 	const { id } = useParams();
 	useEffect(()=> {
 		if(id)
 			callBackendAPI('team', id)
-			.then(res => {
-				initData(res);
+			.then(teamRes => {
+				setTeam(teamRes);
+				// obtain team members
+				for(let i = 0; i < teamRes.members.length; i++) {
+					callBackendAPI('user', teamRes.members[i])
+					.then(userRes => {
+						// get the set
+						if(userRes.setID){
+							addSet(userRes, db, equipment, addEquipment)
+							.then(setData => {
+								userRes.job = setData.job;
+								userRes.set = setData.set;
+								setMembers(members => [...members, userRes]);
+							});
+						} else {
+							setMembers(members => [...members, userRes]);
+						}
+					})
+					.catch(e => console.error(`[server error](TeamPage:User)`,e));
+				}
 			})
-			.catch(e => console.error(`[server error] `, e));
+			.catch(e => console.error(`[server error](TeamPage:Team)`, e));
 	}, [id]);
 
 	const [user, setUser] = useState<string>('');
 	const [team, setTeam] = useState<Team>({...emptyTeam});
+	const [members, setMembers] = useState<Member[]>([]);
 	const [equipment, setEquipment] = useState(new Map());
 	const addEquipment = (k:string, v:equipType) => {
 		setEquipment(equipment.set(k, v));
 	}
 	const [editing, setEditing] = useState<boolean>(false);
 
-	async function initData (nTeam:Team) {
-		// obtain sets listed in Team Data
-		addSetBulk(
-			nTeam,
-			db,
-			equipment,
-			addEquipment)
-		.then(res => setTeam(res));
-	}
-
 	async function login() {
 
 	}
 
-	function updateObtained(name:string, itemId:string, value:boolean = true) {
-		// ensure there's a team to be updated
-		if(!team) return;
-
+	function updateObtained(id:string, itemId:string, value:boolean = true) {
 		// update the object locally
-		const update = team;
+		const update = members;
 		// remove all object references with the payload
-		const payload = JSON.parse(JSON.stringify(team));
-		for(let i = 0; i < update.members.length; i++) {
-			if(update.members[i].name === name) {
-				update.members[i].obtained[itemId] = value;
-				payload.members[i].obtained[itemId] = value;
+		const payload = JSON.parse(JSON.stringify(members));
+		for(let i = 0; i < update.length; i++) {
+			if(update[i]._id === id) {
+				update[i].obtained[itemId] = value;
+				payload[i].obtained[itemId] = value;
 			}
 			// do NOT include members[i].job or members[i].set in payload
-			delete payload.members[i].job;
-			delete payload.members[i].set;
+			delete payload[i].job;
+			delete payload[i].set;
 		}
 		// update the local copy
-		setTeam({...update});
+		setMembers([...update]);
 
 		// call server to update the database entry
 		// this will use the team ID and update the entire object
-		updateDB(payload._id, payload);
+		updateDB('user', payload._id, payload);
 	}
 
-	function updateMember() {
-		if(!team) return;
-
-		// remove all object references with the payload
-		const payload = JSON.parse(JSON.stringify(team));
-
-		for(let i = 0; i < payload.members.length; i++) {
-			// If there's empty member names, delete them
-			if(payload.members[i].name === ''){
-				delete payload.members[i];
-			} else {
-				// do NOT include members[i].job or members[i].set in payload
-				delete payload.members[i].job;
-				delete payload.members[i].set;
-			}
+	function updateMember(member:Member, add:boolean = false) {
+		// If the names is empty, do nothing
+		if(member.name === ''){
+			return;
 		}
 
-		updateDB(payload._id, payload);
+		// remove all object references with the payload
+		const payload = JSON.parse(JSON.stringify(member));
 
-		// run an update
-		initData(payload).then(res => console.log('done',res));
+		// fetch new gear & update local data
+		if(member.setID && !member.set)
+			addSet(member, db, equipment, addEquipment)
+			.then(setData => {
+				member.job = setData.job;
+				member.set = setData.set;
+				if(add) {
+					setMembers((members) => [...members, member]);
+				} else {
+					const mList = [...members];
+					for(let i = 0; i < mList.length; i++) {
+						if(mList[i]._id === member._id) {
+							mList[i] = {...member};
+							break;
+						}
+					}
+					setMembers([...mList]);
+				}
+			});
+		// do NOT include members[i].job or members[i].set in payload
+		delete payload.job;
+		delete payload.set;
+
+		if(add) {
+			// add new member to the database
+			const idList:string[] = [];
+			for(let i = 0; i < members.length; i++) {
+				idList.push(members[i]._id);
+			}
+			idList.push(member._id);
+			const teamUpdate = {...team};
+			teamUpdate.members = [...idList];
+			updateDB('team', team._id, teamUpdate);
+			updateDB('user', 'new', member);
+		} else {
+			// update existing member
+			updateDB('user', payload._id, payload);
+		}
 	}
 
-	function removeMember(name:string) {
-		if(!team) return;
-
+	function removeMember(id:string) {
+		console.log(`Removing ${id}`);
 		// update the object locally
 		const update = team;
 		// remove all object references with the payload
 		const payload = JSON.parse(JSON.stringify(team));
 		for(let i = 0; i < update.members.length; i++) {
-			if(update.members[i].name === name) {
+			if(update.members[i] === id) {
 				update.members.splice(i,1);
 				payload.members.splice(i,1);
-			} else {
-				// do NOT include members[i].job or members[i].set in payload
-				delete payload.members[i].job;
-				delete payload.members[i].set;
+				break;
 			}
 		}
-
 		setTeam({...update});
-		updateDB(payload._id, payload);
+		updateDB('team', payload._id, payload);
+		// remove from local members storage
+		setMembers(members => members.filter(m => m._id !== id));
 	}
 
 	return(
@@ -166,20 +191,23 @@ function TeamPage(props:any){
 				<span className="grow"></span>
 				{!editing &&
 					<Distributor
-						members={team.members.map(({name}) => name)}
+						members={members.map(({name}) => name)}
 						giveItem={(name:string, item:string) => {
 							updateObtained(name, item, true);
 						}} />
 				}
 				<Login />
 			</nav>
+			{members.length === 0 &&
+				<span>No team members</span>
+			}
 			{editing ?
-				<TeamEdit team={team}
+				<TeamEdit members={[...members]}
 					updateMember={updateMember}
 					removeMember={removeMember} />
 			:
 				<TeamDisplay
-					team={team}
+					members={[...members]}
 					equipment={equipment}
 					updateObtained={updateObtained} />
 			}

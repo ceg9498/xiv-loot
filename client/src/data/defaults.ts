@@ -104,7 +104,7 @@ const emptyObtained:obtainedItemType = {
 }
 
 const newMember:Member = {
-	id: '',
+	_id: '',
 	name: '',
 	setID: '',
 	obtained: emptyObtained

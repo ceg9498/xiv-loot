@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { emptyObtained, newMember } from '../data/defaults';
-import { Team } from '../types/storage';
+import { Member } from '../types/storage';
 import './teamEdit.css';
 
-export default function TeamEdit(props:{team:Team, updateMember:Function, removeMember:Function}) {
-	const { team, updateMember, removeMember } = props;
+export default function TeamEdit(props:{
+	members:Member[],
+	updateMember:Function,
+	removeMember:Function
+}) {
+	const { members, updateMember, removeMember } = props;
 	const [ editing, setEditing ] = useState<string>('');
 	const [ adding, setAdding ] = useState<boolean>(false);
 	const [ nName, setName ] = useState<string>('');
@@ -14,7 +18,7 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 			<article id="team-edit">
 				<h2>Members</h2>
 				<ul>
-					{team.members.map((member, id) =>
+					{members.map((member, id) =>
 						<li key={id}>
 							<div className='member-info-text'>
 								<span className="property">Name:</span>
@@ -24,7 +28,7 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 										setName(e.target.value);
 									}} />
 								:
-									<span className='value'>{member.name}</span>
+									<span className='value'>{member.name} {member._id}</span>
 								}
 								<br/>
 								<span className="property">Etro ID:</span>
@@ -48,6 +52,7 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 												member.name = nName;
 												if(member.setID !== nSetID) {
 													member.setID = nSetID;
+													member.set = undefined;
 													const answer = window.confirm(
 														'Set info is being updated. Do you want to reset gear progression for this character?'
 													);
@@ -55,7 +60,7 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 														member.obtained = emptyObtained;
 													}
 												}
-												updateMember();
+												updateMember({...member});
 												setEditing('');
 												setName('');
 												setSetID('');
@@ -92,7 +97,7 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 												const answer = window.confirm(
 													`Are you sure you want to delete ${member.name}?`);
 												if(answer) {
-													removeMember(member.name);
+													removeMember(member._id);
 												}
 											}}>🗑️</button>
 										</>
@@ -118,15 +123,15 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 							<div className='member-info-buttons'>
 								<button
 									className='emoji'
-									aria-label='confirm edit'
+									aria-label='confirm add'
 									onClick={(e)=>{
 										e.preventDefault();
 										let member = newMember;
-										member.id = Date.now() + "";
+										member._id = Date.now() + "";
+										console.log(`new id: ${member._id}`);
 										member.name = nName;
 										member.setID = nSetID;
-										team.members.push(member);
-										updateMember();
+										updateMember({...member}, true);
 										setEditing('');
 										setName('');
 										setSetID('');
@@ -134,13 +139,13 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 									}}>✔️</button>
 								<button
 									className='emoji'
-									aria-label='cancel edit'
+									aria-label='cancel add'
 									onClick={(e)=>{
 										e.preventDefault();
-										setAdding(false);
 										setEditing('');
 										setName('');
 										setSetID('');
+										setAdding(false);
 									}}>❌</button>
 									</div>
 									</li>
@@ -149,7 +154,6 @@ export default function TeamEdit(props:{team:Team, updateMember:Function, remove
 				<button
 					className='add-member'
 					onClick={(e) => {
-						console.log('add pressed')
 						e.preventDefault();
 						setEditing('new member');
 						setAdding(true);

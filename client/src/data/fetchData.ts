@@ -3,6 +3,7 @@ const equipmentStore = 'equipment';
 const setStore = 'set';
 
 async function fetchGearset(id:string, db:IndexDB|null) {
+	if(!id) return;
 	if(db && db.isOpen()) {
 		const res = await db.getItem(setStore, id);
 		if(!res) {

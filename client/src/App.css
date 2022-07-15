@@ -11,6 +11,7 @@
  font-family: sans-serif;
  --bg-color: #282a2e;
  --bg-color2: #3a3d42;
+ --dark-accent-color: #362161;
  --accent-color: #cab0ff;
  --text-color: #f3f2f5;
 }
@@ -49,6 +50,10 @@ div#not-dps {
   flex-direction: column;
 }
 section#dps-jobs {
+  display: flex;
+  flex-direction: column;
+}
+section#unknown-role {
   display: flex;
   flex-direction: column;
 }
@@ -108,6 +113,10 @@ summary {
 
 .dps {
  --role: #4a0101;
+}
+
+.unknown-role {
+  --role: var(--dark-accent-color);
 }
 
 .gear-tile {
