@@ -9,7 +9,7 @@ function findCharacterName(
 	setCharName:Function
 ) {
 	for(let i = 0; i < memberList.length; i++) {
-		if(memberList[i].id === id) {
+		if(memberList[i]._id === id) {
 			console.log('found', memberList[i])
 			setCharName(memberList[i].name);
 		}
